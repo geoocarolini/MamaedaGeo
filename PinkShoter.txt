@@ -1,0 +1,100 @@
+import robocode.*;
+import java.awt.Color;
+
+public class PinkShoter extends AdvancedRobot {
+    
+    boolean avistouInimigo = false;
+    double vida = 100;
+
+    public void run() {
+        // Defina a cor do robô
+        setColors(Color.pink, Color.white, Color.pink);
+
+        // Loop principal do robô
+        while (true) {
+            // Move para frente
+            ahead(100);
+            // Gira o radar para procurar inimigos
+            turnRadarRight(360);
+            // Move-se aleatoriamente para evitar ser atingido
+            movimentoAleatorio();
+        }
+    }
+
+    public void onScannedRobot(ScannedRobotEvent e) {
+        // Quando um inimigo é escaneado
+        avistouInimigo = true;
+
+        // Gira o canhão em direção ao inimigo
+        turnGunRight(getHeading() - getGunHeading() + e.getBearing());
+        // Atira no inimigo
+        fire(300);
+
+        // Desvia dos tiros dos inimigos
+        if (e.getDistance() < 100) {
+            // Se o inimigo estiver muito próximo, faz uma esquiva
+            setTurnRight(e.getBearing() + 90);
+            // Move para trás enquanto desvia dos tiros
+            ahead(-100);
+        } else {
+            // Se estiver longe, continua se movendo para frente
+            ahead(100);
+        }
+    }
+
+    public void onHitByBullet(HitByBulletEvent e) {
+        // Quando é atingido por uma bala, desvia-se
+        setTurnRight(90 + Math.random() * 180);
+        ahead(100);
+    }
+
+    public void onHitWall(HitWallEvent e) {
+        // Quando atinge uma parede, muda de direção
+        setTurnRight(180);
+        ahead(100);
+    }
+
+    public void onHitRobot(HitRobotEvent e) {
+        // Quando colide com outro robô, move para trás e atira
+        back(100);
+        fire(300);
+    }
+    
+    public void onBulletHit(BulletHitEvent e) {
+        // Quando uma bala atinge o inimigo, aumenta a vida do robô
+        vida += 10;
+    }
+    
+    public void onBulletMissed(BulletMissedEvent e) {
+        // Quando uma bala falha em atingir o inimigo, reduz a vida do robô
+        vida -= 5;
+    }
+
+    public void onRobotDeath(RobotDeathEvent e) {
+        // Reinicia a busca por inimigos quando um inimigo morre
+        avistouInimigo = false;
+    }
+
+    public void movimentoAleatorio() {
+        // Move-se aleatoriamente para evitar ser atingido
+        int random = (int) (Math.random() * 4); // 0, 1, 2, 3
+        switch (random) {
+            case 0:
+                ahead(100);
+                break;
+            case 1:
+                back(100);
+                break;
+            case 2:
+                setTurnRight(90);
+                ahead(100);
+                break;
+            case 3:
+                setTurnLeft(90);
+                ahead(100);
+                break;
+            default:
+                break;
+        }
+    }
+}
