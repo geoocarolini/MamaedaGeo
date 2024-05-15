@@ -1,0 +1,71 @@
+import robocode.*;
+import java.awt.Color;
+
+public class MamaedaGeo extends AdvancedRobot {
+
+    boolean encontrouInimigo = false;
+
+    public void run() {
+        // Defina as cores do robô
+        setColors(Color.red, Color.blue, Color.green, Color.yellow, Color.orange);
+
+        // Gira o canhão 360 graus
+        turnGunRight(360);
+
+        // Loop principal do robô
+        while (true) {
+            if (!encontrouInimigo) {
+                // Gira o radar para procurar inimigos
+                turnRadarRight(360);
+            }
+            // Move para frente
+            ahead(100);
+            // Move o radar independentemente do robô
+            setTurnRadarRight(360);
+        }
+    }
+
+    public void onScannedRobot(ScannedRobotEvent e) {
+        // Quando um inimigo for escaneado
+        encontrouInimigo = true;
+
+        // Gira o canhão em direção ao inimigo
+        turnGunRight(getHeading() - getGunHeading() + e.getBearing());
+        // Atira no inimigo
+        fire(3);
+
+        // Desvia dos tiros dos inimigos
+        if (e.getDistance() < 100) {
+            // Se o inimigo estiver muito próximo, faz uma esquiva
+            setTurnRight(e.getBearing() + 90);
+        } else {
+            // Se estiver longe, faz uma esquiva menor
+            setTurnRight(e.getBearing() + 45);
+        }
+        // Move para trás enquanto desvia dos tiros
+        ahead(-100);
+    }
+
+    public void onHitByBullet(HitByBulletEvent e) {
+        // Quando é atingido por uma bala, muda de direção aleatoriamente
+        setTurnRight(90 + Math.random() * 180);
+        ahead(100);
+    }
+
+    public void onHitWall(HitWallEvent e) {
+        // Quando atinge uma parede, muda de direção
+        setTurnRight(180);
+        ahead(100);
+    }
+
+    public void onHitRobot(HitRobotEvent e) {
+        // Quando colide com outro robô, move para trás e atira
+        back(100);
+        fire(3);
+    }
+
+    public void onRobotDeath(RobotDeathEvent e) {
+        // Reinicia a busca por inimigos quando um inimigo morre
+        encontrouInimigo = false;
+    }
+}
